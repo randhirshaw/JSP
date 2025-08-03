@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Job Search Plan: Data Analyst</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: The application is designed as a task-oriented dashboard with three main sections accessible via tabbed navigation: "Weekly Plan," "Target Roles," and "Resources." This structure was chosen to break down the linear report into manageable, interactive components. The default view is the "Weekly Plan," as it's the most actionable part of the report. Users can easily switch between days to see their tasks, preventing information overload. The "Target Roles" and "Resources" sections use a card-based layout to visually group information, making it more scannable and engaging than a simple list. This non-linear, user-driven flow enhances usability and makes the plan a practical tool rather than a static document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Weekly schedule (2 hours/day, 5 days). Goal: Inform/Organize. Viz/Method: Interactive daily schedule tabs. Interaction: Click day to show tasks. Justification: Focuses user on daily goals. Method: HTML/CSS/JS.
+        - Report Info: Time commitment. Goal: Visualize. Viz/Method: Chart.js Donut Chart. Interaction: Hover for tooltips. Justification: Provides a quick visual summary of the effort distribution, fitting the data analyst theme. Library: Chart.js.
+        - Report Info: Target Roles by Industry. Goal: Compare/Organize. Viz/Method: Card-based layout for industries. Interaction: Click to reveal roles. Justification: Allows users to drill down into industries of interest. Method: HTML/CSS/JS.
+        - Report Info: Learning Resources. Goal: Inform/Organize. Viz/Method: Grid of resource category cards. Justification: Visually appealing and easy to scan. Method: HTML/CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .nav-active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        .nav-inactive {
+            border-bottom-color: transparent;
+            color: #6b7280;
+        }
+        .content-panel {
+            display: none;
+        }
+        .content-panel.active {
+            display: block;
+        }
+        .day-tab-active {
+            background-color: #3b82f6;
+            color: #ffffff;
+        }
+        .day-tab-inactive {
+            background-color: #e5e7eb;
+            color: #4b5563;
+        }
+        .task-card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+        .task-card:hover {
+            transform: translateY(-4px);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            height: auto;
+            margin-left: auto;
+            margin-right: auto;
+            aspect-ratio: 1 / 1;
+        }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Interactive Job Search Plan</h1>
+            <p class="mt-2 text-lg text-gray-600">Your Actionable Roadmap for a Data Analyst Role</p>
+        </header>
+
+        <main>
+            <div class="w-full max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <!-- Main Navigation -->
+                <nav class="flex border-b border-gray-200 mb-6">
+                    <button data-target="plan" class="main-nav-tab nav-active flex-1 py-3 text-center transition-colors duration-200">Weekly Plan</button>
+                    <button data-target="roles" class="main-nav-tab nav-inactive flex-1 py-3 text-center transition-colors duration-200">Target Roles</button>
+                    <button data-target="resources" class="main-nav-tab nav-inactive flex-1 py-3 text-center transition-colors duration-200">Resources</button>
+                </nav>
+
+                <!-- Content Panels -->
+                <div id="plan" class="content-panel active">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-semibold text-gray-800">Your Weekly Schedule</h2>
+                        <p class="text-gray-600 mt-1">A focused 2-hour block each weekday to maximize your job search efforts.</p>
+                    </div>
+                    <!-- Day Tabs -->
+                    <div class="flex justify-center space-x-2 md:space-x-4 mb-8 p-2 bg-gray-100 rounded-full">
+                        <button data-day="monday" class="day-tab day-tab-active px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200">Mon</button>
+                        <button data-day="tuesday" class="day-tab day-tab-inactive px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200">Tue</button>
+                        <button data-day="wednesday" class="day-tab day-tab-inactive px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200">Wed</button>
+                        <button data-day="thursday" class="day-tab day-tab-inactive px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200">Thu</button>
+                        <button data-day="friday" class="day-tab day-tab-inactive px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200">Fri</button>
+                    </div>
+
+                    <!-- Daily Task Content -->
+                    <div id="daily-tasks">
+                        <!-- Monday -->
+                        <div class="day-content" data-content="monday">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">3:00 - 4:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Networking & Outreach</h3>
+                                    <p class="text-gray-600 mt-2">Identify 5-10 people on LinkedIn in target roles. Personalize and send connection requests.</p>
+                                </div>
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">4:00 - 5:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Follow-Up & Scheduling</h3>
+                                    <p class="text-gray-600 mt-2">Follow up on previous requests. Schedule 15-minute informational interviews to learn and connect.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tuesday -->
+                        <div class="day-content hidden" data-content="tuesday">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">3:00 - 4:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Portfolio Development</h3>
+                                    <p class="text-gray-600 mt-2">Refine a project: write a blog post, enhance a Tableau dashboard, or clean up Python code.</p>
+                                </div>
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">4:00 - 5:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Skill Development</h3>
+                                    <p class="text-gray-600 mt-2">Practice SQL on HackerRank, take a Python tutorial, or learn a new Power BI feature.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Wednesday -->
+                        <div class="day-content hidden" data-content="wednesday">
+                           <div class="grid md:grid-cols-2 gap-6">
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">3:00 - 4:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Active Job Search</h3>
+                                    <p class="text-gray-600 mt-2">Search for new openings on LinkedIn, Indeed, and company career pages that match your targets.</p>
+                                </div>
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">4:00 - 5:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Applications & Tracking</h3>
+                                    <p class="text-gray-600 mt-2">Apply to 3-5 jobs, customizing your resume/cover letter. Update your job search tracker.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Thursday -->
+                        <div class="day-content hidden" data-content="thursday">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">3:00 - 4:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Behavioral Interview Prep</h3>
+                                    <p class="text-gray-600 mt-2">Practice answering common questions using the STAR method. Frame your stories effectively.</p>
+                                </div>
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">4:00 - 5:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Technical Interview Prep</h3>
+                                    <p class="text-gray-600 mt-2">Work on live SQL challenges on LeetCode or walk through a data analysis case study.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Friday -->
+                        <div class="day-content hidden" data-content="friday">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">3:00 - 4:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Company Research</h3>
+                                    <p class="text-gray-600 mt-2">Research the data stack, culture, and recent news for your target companies to tailor applications.</p>
+                                </div>
+                                <div class="task-card p-6">
+                                    <span class="block text-sm font-semibold text-blue-600">4:00 - 5:00 PM</span>
+                                    <h3 class="text-lg font-bold mt-1">Weekly Review & Planning</h3>
+                                    <p class="text-gray-600 mt-2">Review your progress, update your tracker, and plan your activities for the upcoming week.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="roles" class="content-panel">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-semibold text-gray-800">Target Roles by Industry</h2>
+                        <p class="text-gray-600 mt-1">Explore potential job titles in your industries of interest.</p>
+                    </div>
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="task-card p-6">
+                            <h3 class="text-xl font-bold text-blue-700">Tech</h3>
+                            <ul class="mt-4 space-y-2 text-gray-600 list-disc list-inside">
+                                <li>Data Analyst</li>
+                                <li>Business Intelligence (BI) Analyst</li>
+                                <li>Marketing Analyst</li>
+                                <li>Product Analyst</li>
+                            </ul>
+                        </div>
+                        <div class="task-card p-6">
+                            <h3 class="text-xl font-bold text-green-700">Finance</h3>
+                            <ul class="mt-4 space-y-2 text-gray-600 list-disc list-inside">
+                                <li>Financial Data Analyst</li>
+                                <li>Risk Analyst</li>
+                                <li>Credit Analyst</li>
+                                <li>Quant Analyst (Junior)</li>
+                            </ul>
+                        </div>
+                        <div class="task-card p-6">
+                            <h3 class="text-xl font-bold text-yellow-700">Real Estate</h3>
+                            <ul class="mt-4 space-y-2 text-gray-600 list-disc list-inside">
+                                <li>Real Estate Data Analyst</li>
+                                <li>Market Research Analyst</li>
+                                <li>Portfolio Analyst</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resources" class="content-panel">
+                    <div class="text-center mb-8">
+                        <h2 class="text-2xl font-semibold text-gray-800">Learning & Preparation Resources</h2>
+                        <p class="text-gray-600 mt-1">Curated resources to sharpen your skills and prepare for interviews.</p>
+                    </div>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="task-card p-6">
+                            <h3 class="text-lg font-bold">SQL</h3>
+                            <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                                <li><strong>Mode:</strong> Guided SQL training</li>
+                                <li><strong>StrataScratch:</strong> Real interview questions</li>
+                                <li><strong>HackerRank/LeetCode:</strong> Coding challenges</li>
+                            </ul>
+                        </div>
+                        <div class="task-card p-6">
+                            <h3 class="text-lg font-bold">Python / R</h3>
+                            <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                                <li><strong>Coursera/edX:</strong> University-level courses</li>
+                                <li><strong>DataCamp:</strong> Interactive learning</li>
+                            </ul>
+                        </div>
+                         <div class="task-card p-6">
+                            <h3 class="text-lg font-bold">Tableau / Power BI</h3>
+                            <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                                <li><strong>Official Cert Prep:</strong> Vendor training</li>
+                                <li><strong>YouTube:</strong> Creators like SQLBI, Andy Kriebel</li>
+                            </ul>
+                        </div>
+                        <div class="task-card p-6">
+                            <h3 class="text-lg font-bold">Industry Knowledge</h3>
+                            <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                                <li><strong>Finance:</strong> WSJ, Bloomberg</li>
+                                <li><strong>Real Estate:</strong> The Real Deal</li>
+                            </ul>
+                        </div>
+                        <div class="task-card p-6">
+                            <h3 class="text-lg font-bold">Interview Prep</h3>
+                            <ul class="mt-3 space-y-2 text-sm text-gray-600">
+                                <li><strong>Cracking the Coding Interview:</strong> Classic guide</li>
+                                <li><strong>Glassdoor:</strong> Company-specific questions</li>
+                            </ul>
+                        </div>
+                         <div class="task-card p-6 flex flex-col justify-center items-center">
+                            <h3 class="text-lg font-bold mb-4 text-center">Weekly Time Allocation</h3>
+                            <div class="chart-container">
+                                <canvas id="effortChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainNavTabs = document.querySelectorAll('.main-nav-tab');
+            const contentPanels = document.querySelectorAll('.content-panel');
+            const dayTabs = document.querySelectorAll('.day-tab');
+            const dayContents = document.querySelectorAll('.day-content');
+
+            mainNavTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    mainNavTabs.forEach(t => {
+                        t.classList.remove('nav-active');
+                        t.classList.add('nav-inactive');
+                    });
+                    tab.classList.remove('nav-inactive');
+                    tab.classList.add('nav-active');
+
+                    const target = tab.getAttribute('data-target');
+                    contentPanels.forEach(panel => {
+                        if (panel.id === target) {
+                            panel.classList.add('active');
+                        } else {
+                            panel.classList.remove('active');
+                        }
+                    });
+                });
+            });
+            
+            dayTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    dayTabs.forEach(t => {
+                        t.classList.remove('day-tab-active');
+                        t.classList.add('day-tab-inactive');
+                    });
+                    tab.classList.add('day-tab-active');
+                    tab.classList.remove('day-tab-inactive');
+
+                    const day = tab.getAttribute('data-day');
+                    dayContents.forEach(content => {
+                        if (content.getAttribute('data-content') === day) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const ctx = document.getElementById('effortChart').getContext('2d');
+            const effortChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Networking', 'Skill Dev', 'Applications', 'Interview Prep', 'Research/Review'],
+                    datasets: [{
+                        label: 'Weekly Hours',
+                        data: [2, 2, 2, 2, 2],
+                        backgroundColor: [
+                            '#3b82f6', // Blue
+                            '#10b981', // Green
+                            '#f97316', // Orange
+                            '#8b5cf6', // Violet
+                            '#f59e0b'  // Amber
+                        ],
+                        borderColor: '#ffffff',
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: {
+                                    size: 12,
+                                    family: 'Inter'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + ' hours';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
